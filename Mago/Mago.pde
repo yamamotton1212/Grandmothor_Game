@@ -2,141 +2,147 @@
 
 //ステージクラスの生成
 Stage stage;
+
 //道クラスの生成
 Road road;
+
 //プレイヤークラスの生成
 Player player;
+
 //敵、隕石クラスの生成
 nomalMeteo meteo;
+nomalMeteo[] x;
+
 //敵、歩く敵クラスの生成
 Walk_En enemy;
+
 //アイテム、キノコの生成
-Mush mush;
+Box box;
+
 //アイテム、カギの生成
 Key a_key;
 
+//スタートステージ画面の生成
 Start g_start;
 
-nomalMeteo[] x;
+//クリアーステージ画面の生成
+Clear g_clear;
+
 
 
 void setup() {
   size(1000, 350);
 
 
-  //fullScreen();
-
   //インスタンスの生成
   stage       = new Stage();
   road         = new Road();
   player      = new Player(0, height-100, 0);
 
-
-  x = new nomalMeteo[10];
+  x = new nomalMeteo[4];
   for (int i = 0; i < x.length; i++) {
-    x[i]= new nomalMeteo();
+    x[ i ] = new nomalMeteo();
   }
 
   enemy     = new Walk_En();
-  mush        = new Mush();
+  box           = new Box();
   a_key       = new Key();
-
   g_start     =new Start();
+
+  g_clear = new Clear();
 }
 
+//
 int cnt = 0;
+
 void draw() {
 
+  //ゲームのスタート画面の表示
   if (g_start.start == false) {
     g_start.display();
-  } else {
+  } 
+  //ゲームスタート後のプログラム
+  else {
 
+    //ステージクリア判定
     boolean stageclear = false;
-    if (stage.open == true) {
+
+    //
+    if (stage.dooropen == true) {
     }
 
 
-    fill(0);
-    stroke(0);
-    //rect(30,30,60,60);
-
+    //ステージクリアしていない時
     if (stageclear == false) {
       cnt++;
-      println(cnt);
-
-      //meteo[cnt      = new nomalMeteo();
-      fill(255);
 
       stage.stagedisplay();
-      if (stage.stage3_judge == true) stage.display();
-      if (stage.open == true && width-20<player.x) stroke(140, 140, 140);
+
+      //三面に入った時
+      if (stage.stage3_judge == true) stage.doordisplay();
+
+      //ドアが開いてるかつ
+      if (stage.dooropen == true && width - 20 < player.x) stroke(140, 140, 140);
+      //
       else stroke(0);
+
       player.display();
-      
-      if(stage.open == true){
-        noLoop();
-        background(255);
-        textAlign(CENTER);
-        
-        PFont  font = createFont("Yu Gothic",64,true);
-        textFont(font);
-        
-        textSize(64);
-        fill(100);
-        text("クリアー",width/2, height/2);
+
+      //ドアが開いている時
+      if (stage.dooropen == true) {
+
+        g_clear.cleardisplay();
       }
 
-
-
       fill(255);
+
       stage.stageMove(player.dx);
+
+      //
       for (int i = 0; i < x.length; i++) {
 
-        if (stage.stage3_judge == true)x[i].hitbox(395, 90, 60, 60);
+        //ステージ３にいる時に隕石が箱に当たった時
+        if (stage.stage3_judge == true) x[i].hitbox(box.box_x, box.box_y, box.box_w, box.box_h);
+
+        //
         if (x[0].judge_rect == false && x[1].judge_rect == false && x[2].judge_rect == false && x[3].judge_rect == false) {
+          //
           if (stage.stage3_judge == true) {
-            mush.display();
-            if (player.x>395 && player.x<455) {
-              if (player.y>90 && player.y<150) {
+            box.display();
+            //箱に当たったらワープする判定
+            if (player.x > 395 && player.x < 455) {
+              //
+              if (player.y+50 > 85 && player.y < 150) {
                 player.x = 100;
                 player.y = 250;
+                player.dx = width * 2 + 100;
               }
             }
           }
         }
       }
 
-      text(x[0].judge_rectt, 349, 100);
-      text(x[1].judge_rectt, 349, 110);
-      text(x[2].judge_rectt, 349, 120);
-      text(x[3].judge_rectt, 349, 130);
-      text(x[4].judge_rectt, 349, 140);
-
 
       a_key.hit(player.x, player.y);
+
+      //鍵を獲得していない時
       if (a_key.touch == false) {
+        //三面にいる時
         if (stage.stage3_judge == true) a_key.display();
       }
-      if (a_key.touch == true) {
 
-        if (stage.stage3_judge == true) a_key.display();
-        a_key.x = 780;
-        a_key.y = 10;
-        fill(0);
-        text("かくとく！", 700, 10);
-        fill(255);
+
+      //鍵を獲得している時
+      else {
+        if (stage.dooropen == false)
+          a_key.get_key_display();
+
         stage.hit(player.x, player.y);
       }
 
+      //
       int hx = player.x;
       int hy = player.y;
-
-
-
-
-
-
-
 
       x[0].display();
       x[0].move_1();
@@ -167,91 +173,57 @@ void draw() {
 
       for (int i = 0; i < x.length; i++) {
 
-        if (x[i].judge == true) {
+        if ((x[i].judge == true) || (hy > height)) {
+          if(stage.dooropen == false){
           player.isdead();
-          noLoop();
           background(255);
           textAlign(CENTER);
           textSize(64);
           fill(100);
+          PImage img = loadImage("kanasii.png");
+          image(img, 10, 65); 
           text("GAME OVER", width/2, height/2);
+          
+          textSize(32);
+          text("[R]キーでリトライ", width/2+90, height/2+100);
+        }
         }
       }
 
 
-
-
-      if (road.drawroad == true) {
-        fill(0);
-        text("drawroad = true", 200, 10);
-      } else {
-        fill(0);
-        text("drawroad = false", 200, 10);
-      }
-
       player.jamp_move(3, 50);
       road.drawline();
 
-      player.Landing(road.drawroad, player.x, int(player.p_stop(road.x0, road.y0, mouseX, mouseY) ), road.x0, mouseX, stage.stage1_y(player.dx, player.y)/*height-20*/);//height-20は仮
-      if (player.landingLine == true) {
-        fill(0);
-        text("landingLine = true", 200, 30);
-      } else {
-        fill(0);
-        text("landingLine = false", 200, 30);
-      }
+      player.Landing(road.drawroad, player.x, int(player.p_stop(road.x0, road.y0, mouseX, mouseY) ), road.x0, mouseX, stage.stage1_y(player.dx, player.y) );
+
 
       player.stage_move(road.drawroad, player.p_stop(road.x0, road.y0, mouseX, mouseY));
 
 
       if (player.pjump == true) {
         fill(0);
-        text("pjump = true", 200, 50);
+     
       } else {
         fill(0);
-        text("pjump= false", 200, 50);
+     
       }
 
-      //player.jamp_jgd();
 
       player.jamp_start();
-
-      /*
-player.Landing(road.drawroad, player.p_stop(road.x0, road.y0, mouseX, mouseY), road.x0, mouseX );
-       
-       player.stage_move(road.drawroad, player.p_stop(road.x0, road.y0, mouseX, mouseY));
-       player.jamp();
-       
-       
-       road.drawline();
-       player.jamp_jgd();
-       
-       //player.Landing(road.drawroad, player.p_stop(road.x0, road.y0, mouseX, mouseY), road.x0, mouseX );
-       //road.drawline();
-       
-       //player.jamp();
-       //player.stage_move(road.drawroad, player.p_stop(road.x0, road.y0, mouseX, mouseY));
-       //player.jamp();
-       
-       //player.Landing(road.drawroad, player.p_stop(road.x0, road.y0, mouseX, mouseY), road.x0, mouseX );
-       
-       //player.jamp_jgd();
-       //road.drawline();
-       */
-    }
-
-    if (stageclear == true) {
-      text("かくとく！", 500, 100);
     }
   }
 }
+
+
 void keyPressed() {
   player.keyPressed();
-  g_start.keyPressed();
+}
+
+void mouseReleased() {
+  g_start.mouseReleased();
 }
 
 void keyReleased() {
-  //player.jamp();
 
   player.keyReleased();
 
@@ -259,8 +231,21 @@ void keyReleased() {
   if (key == 'q') {
     player.x = 2001;
     player.y = height - 100;
-     player.dx = 2001;
+    player.dx = 2001;
     player.pjump = false;
     player.landingLine = false;
+  }
+
+  //リトライボタン
+  if (key == 'r') {
+    player.x = 1;
+    player.y = height - 100;
+    player.dx = 1;
+    player.pjump = false;
+    player.landingLine = false;
+
+    for (int i = 0; i < 4; i++) {
+      x[i].judge = false;
+    }
   }
 }

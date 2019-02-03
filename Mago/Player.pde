@@ -28,7 +28,7 @@ class Player {
   int x;
   int y;
 
-  //プレイヤーの移動距離x（仮）
+  //プレイヤーの移動距離x
   int dx = 0;
 
 
@@ -52,19 +52,11 @@ class Player {
   void display() {
 
     image( img, x-20, y);
-    //line(x, y, x, y-30);
 
     //画面上でのプレイヤーの座標が0より大きい時
     if ( x >= 0) x = x % width;
     //画面上でのプレイヤーの座標が0より小さい時
     else             x = width + x;
-
-    text("x = ", 100, 200);
-    text(x, 150, 200);
-
-    text("y = ", 100, 220);
-    text(y, 150, 220);
-    //To do
   }
 
 
@@ -79,29 +71,10 @@ class Player {
         move();
         y =  int(y0);
         pjump = false;
-
-        //ステージと道が重なった時
-        /*
-        if (y == stage_y) {
-         landingLine = false;
-         move();
-         }
-         */
       }
       //道の上にいないとき
       else {
-        //pjump = true;
         move();
-
-        //ステージと道が重なった時
-        /*
-        if (int(y0) == stage_y) {
-         landingLine = true;
-         move();
-         y = int(y0);
-         pjump = false;
-         }
-         */
       }
     } 
     //道がないとき
@@ -113,11 +86,6 @@ class Player {
   //プレイヤーの移動
   void move() {
 
-    text("dx = ", 800, 50);
-    text(dx, 850, 50);
-
-    //  if ( x >= 0) x = x % 1000;
-    //   else             x = 1000 + x;
 
     //左を押した時の動き
     if ((keyLeft)!=false) {
@@ -167,38 +135,32 @@ class Player {
         jumpheight = true;
       }
     }
-
-    /*
-    if (keyCode == UP) {
-     if (pjump == false) {
-     pjump = true;
-     landingLine = false;
-     
-     jumpheight = true;
-     }
-     }
-     */
   }
 
 
   //プレイヤーのジャンプ動作(引数はジャンプの上昇値,　ジャンプの高さ)
   void jamp_move(int dy, int j_dist) {
+
+    //プレイヤーが空中にいる時
     if (pjump == true) {
+
+      //
       if ( jumpheight == true) {
         y -= dy;
         jumpdistance += dy;
       }
+      //
       if (jumpdistance >= j_dist) {
         jumpheight = false;
         jumpdistance = 0;
       }
-      // /*     
+      //
       if (keyUp == false) {
         jumpheight = false;
         jumpdistance = 0;
       }
-      // */   
 
+      //
       if (jumpheight == false ) {
         y += dy;
       }
@@ -209,8 +171,6 @@ class Player {
   //プレイヤーの着地判定(道生成の有無、キャラのいる位置での道の止まるy座標、道の始点、道の終点、もともとあるステージのy座標)
   void Landing( boolean drawroad, int x0, int y0, float sx, float mx, int stage_y) {
 
-    text("傾きa = ", 550, 220);
-    text(x0, 600, 220);
 
     //距離を測るためのx座標の大小を比べるための変数
     float smallx;
@@ -224,14 +184,6 @@ class Player {
       smallx = sx;
     }
 
-    text("largex = ", 400, 50);
-    text(largex, 450, 50);
-    text("smallx = ", 560, 50);
-    text(smallx, 610, 50);
-
-    text("stage_y = ", 660, 70);
-    text(stage_y, 730, 70);
-
 
     //道が引かれている時
     if (drawroad == true) {
@@ -239,28 +191,19 @@ class Player {
       //キャラが道の範囲内にいる時
       if (x >= smallx && x <= largex) {
 
-        text("y = ", 400, 200);
-        text(y, 430, 200);
-        text("y0 = ", 560, 200);
-        text(y0, 590, 200);
 
         //プレイヤーのx,y座標と線の着地位置のx,y座標間の距離が4以下の時　かつ　ジャンプ中の時   かつ　下降中の時     
         if ( dist(x, y, x0, y0)  <= 4 && pjump == true  && jumpheight == false) {
-
-          //background(0);
-          pjump = false;
-
+          if (y <= stage_y) pjump = false;
           landingLine = true;
         }
         //そうでない時
         else {
-          //  if (dist(x, y, x, stage_y) <= 1) {
           pjump = true;
-          if (dist(x, y, x, stage_y) <= 50 && dist(x, y, x, stage_y) >= 45) {
-            pjump = false;
-            text("zaesxrdctfvygbuhnijm", 600, 80);
+          if (dist(x, y, x, stage_y) <= 50 && dist(x, y, x, stage_y) >= 45 && y <= stage_y) {
+            if (y <= stage_y)  pjump = false;
+         
           }
-          //  }
         }
       }
 
@@ -272,7 +215,6 @@ class Player {
 
         if ( dist(x, y, x, stage_y) <= 50 && dist(x, y, x, stage_y) >= 45) {
           pjump = false;
-          text("zaesxrdctfvygbuhnijm", 600, 80);
         }
       }
     }
@@ -281,10 +223,10 @@ class Player {
     else {
       pjump = true;
       landingLine = false;
-      text("道が引かれていません", 600, 100);
+
 
       if (dist(x, y, x, stage_y) <= 50 && dist(x, y, x, stage_y) >= 45) {
-        pjump = false;
+        if (y <= stage_y)  pjump = false;
       }
     }
   }
@@ -306,45 +248,10 @@ class Player {
     //着地位置のy座標
     float y = (x * a + b);
 
-    text("a = ", 660, 160);
-    text(a, 700, 160);
-    text("x0 = ", 660, 180);
-    text(x0, 700, 180);
-    text("y0 = ", 660, 200);
-    text(y0, 700, 200);
-    text("x1 = ", 660, 220);
-    text(x1, 700, 220);
-    text("y1 = ", 660, 240);
-    text(y1, 700, 240);
-    text("b = ", 660, 260);
-    text(b, 700, 260);
 
 
     return int(y)-50;
   }
-
-
-  /*
-  //線を引かれた時のキャラの着地位置(x座標)
-   float p_stop2(float x0, float y0, float x1, float y1) {
-   
-   float a; 
-   if (x0 - x1 == 0) a = 0;
-   else                        a =  ( y0  -  y1 ) / (x0 - x1);
-   float b = y0 - x0 * a;
-   float y = (x * a + b);
-   float x ;
-   
-   if(a != 0) x = (y - b) / a;
-   else          x = 0;
-   
-   text("x = ",200,200);
-   text(x,250,200);
-   
-   
-   return int(x);
-   }
-   */
 
 
   //キャラのあたり判定
@@ -358,25 +265,25 @@ class Player {
   }
 
   //プレイヤー内で使う関数
+  //プレイヤーの入力キー判定
   void keyPressed() {
     if (key == CODED) {
       switch(keyCode) {
+
       case UP:
         keyUp =true;
-        //ellipse(100, 100, 30, 30);
         break;
+
       case LEFT:
         keyLeft=true;
-        //ellipse(100, 200, 30, 30);
         break;
+
       case RIGHT:
         keyRight=true;
-        //ellipse(100, 250, 30, 30);
         break;
       }
     }
   }
-
   void keyReleased() {
     if (key == CODED) {
       switch(keyCode) {

@@ -21,70 +21,114 @@
 
 //隕石クラス
 abstract class Meteo {
-  float x = int(random(130,width));
+
+  //隕石の出現座標
+  float x = int(random(130, width));
   float y = 50;
+
+  //
   boolean judge = false;
+
+  //
   boolean sheeld_judge = false;
-  float rx = random(0,width);
+
+  //
+  float rx = random(0, width);
+
+  //
   boolean vertical = false;
+
+  //
   float x2;
   float y2;
-  float mm2, bb2;
+
+  //
+  float mm2;
+  float bb2;
+
+  //
   boolean judge_rect = false;
+
+  //
   int judge_rectt = 0;
 
-  //プレイヤーが描かれた道の上にいるかどうか。いない時にfalse
+  //隕石が描かれた道の上にいるかどうか。いない時にfalse
   boolean landingLine = false;
-  
+
+  PImage img = loadImage("icon-star.png");
+
+  //隕石の表示
   void display() {
-      ellipse(x,y,25,25);
+    image( img, x, y-13);
+  }
+
+  //隕石の当たり判定
+  void hit(int hx, int hy) {
+    if (dist(x+10, y, hx, hy+10) <= 20) judge = true;
+    if (dist(x+10, y, hx, hy+20) <= 20) judge = true;
+    if (dist(x+10, y, hx, hy+25) <= 20) judge = true;
+    if (dist(x+10, y, hx, hy+30) <= 20) judge = true;
+    if (dist(x+10, y, hx, hy+35) <= 20) judge = true;
+    if (dist(x+10, y, hx, hy+40) <= 20) judge = true;
+    if (dist(x+10, y, hx, hy+45) <= 10) judge = true;
     
   }
-  
-  void hit(int hx, int hy) {
-    if(dist(x, y+13, hx, hy) <= 2) judge = true;
-  }
-  
-  void hitbox(int a,int b,int c,int d){
-    if(x>=a && x<=a+c){
-      if(y>=b && y<= b+d){
+
+  //隕石がボックスに当たった時の関数（引数は箱のx,y座標と幅と高さ）
+  void hitbox(int a, int b, int c, int d) {
+    if (x >= a && x <= a + c) {
+      if (y >= b && y <= b + d) {
         judge_rect = true;
         judge_rectt = 1;
       }
     }
   }
-  
-  void sheeld_hit() {
-    if((x>=mouseX && x<=road.x0) || (x>=road.x0 && x<=mouseX)){
-      //切片
-      float b = -(road.y0 - mouseY)/(road.x0 - mouseX)*road.x0 + road.y0;
-      float h = (road.y0 - mouseY)/(road.x0 - mouseX)*x + b;
-      if(y+12.5>=h-1&&y+12.5<=h+1){
-       // y = 0;
-       // x = int(random(0,width));
-        float m2 = -1/((road.y0 - mouseY)/(road.x0 - mouseX));
-        x2 = x;
-        vertical = true;
-        float b2 = -m2*x+y;
-        bb2 = b2;
-        mm2 = m2;
-        
-      }
-      //デバック
-      text("m2=",100,200);
-      text(mm2,130,200);
-      text("b2=",200,200);
-      text(bb2,230,200);
-      
-    }
-    
-  }
-  
 
-  
-  void land(boolean drawroad, int x0, int y0, float sx, float mx){
+  //シールドに隕石が当たった時の関数
+  void sheeld_hit() {
+
+    //
+
+    if ( (x >= mouseX && x <= road.x0) || (x >= road.x0 && x <=mouseX) ) {
+
+      //切片
+      float b = - (road.y0 - mouseY) / (road.x0 - mouseX) * road.x0 + road.y0;
+
+      float h = (road.y0 - mouseY) / (road.x0 - mouseX) * x + b;
+
+      //　の時
+      if (y + 12.5 >= h - 1 && y + 12.5 <= h + 1) {
+
+
+        //隕石反射時の傾き
+        if ((road.y0 - mouseY)/(road.x0 - mouseX) != 0) {
+
+          float m2 = -1/((road.y0 - mouseY)/(road.x0 - mouseX));
+
+          x2 = x;
+          vertical = true;
+
+          float b2 = -m2 * x + y;
+
+          bb2 = b2;
+          mm2 = m2;
+        } else {
+          vertical = true;
+          mm2 = 0;
+        }
+      }
+    }
+  }
+
+
+  //
+  void land(boolean drawroad, int x0, int y0, float sx, float mx) {
+
+    //受け取った二つのx座標の大小をわかりやすくする変数
     float smallx;
     float largex;
+
+    //二つのx座標の大小を決める
     if (sx >= mx) {
       largex = sx;
       smallx = mx;
@@ -92,85 +136,108 @@ abstract class Meteo {
       largex = mx;
       smallx = sx;
     }
-    
-    if (drawroad == true){
-       //キャラが道の範囲内にいる時
+
+    //シールド（道）が引かれている時
+    if (drawroad == true) {
+
+      //隕石が道の範囲内にいる時
       if (x >= smallx && x <= largex) {
-        
-        //y座標に重なった時 かつ　ジャンプで下降中の時        
+
+        //y座標に重なった時       
         if ( dist(x, y, x0, y0)  <= 4 ) {
-
-          //background(0);
-         // pjump = false;
-
-
           landingLine = true;
-
-          //y = int(y0);
-        } else if (landingLine == true) {
-        //  pjump = true;
+        }
+        //
+        else if (landingLine == true) {
           landingLine = false;
         }
       }
-      //キャラが範囲内にいない時
+      //隕石が範囲内にいない時
       else if (x < smallx || x > largex) {
-       // pjump = true;
         landingLine = false;
-      
+      }
     }
-  }else {
-   // pjump = true;
+    //シールド（道）が引かれていない時
+    else {
       landingLine = false;
-     // text("道が引かれていません", 600, 100);
 
+      //
       if (y >= height-20) {
-       // pjump = false;
       }
     }
   }
 }
- 
 
-class nomalMeteo extends Meteo{
-  
-  void move_1(){
-  //To do
-  
-  if(y>=height){
-    y=0;
-    x = int(random(0,350));
-  }
-  if(vertical == true) {
-    if(mm2>0) x--;
-    else if(mm2<0) x++;
-    y = mm2*x + bb2; 
-    if(y<=0){
-      x = int(random(0,350));
-      vertical = false;
+//隕石、継承クラス
+class nomalMeteo extends Meteo {
+
+  //
+  void move_1() {
+
+    //隕石が下まで行ったらx座標をランダムでまた落とす
+    if (y >= height) {
+      y = 0;
+      x = int( random(0, 350) );
     }
-    text(y,50,50);
-  }else
-  y++;
+
+    //
+    if (vertical == true) {
+
+      //
+      if (mm2>0) {
+        x--;
+        y = mm2*x + bb2; 
+        //
+      } else if (mm2<0) {
+        x++;
+        y = mm2*x + bb2;
+      } else if (mm2 == 0) {
+        y--;
+      }
+
+
+      //
+      if (y <= 0) {
+        x = int(random(0, 350));
+        vertical = false;
+      }
+    }
+    //
+    else y++;
   }
 
-void move_2(){
-  //To do
-  
-  if(y>=height){
-    y=0;
-    x = int(random(470,width));
-  }
-  if(vertical == true) {
-    if(mm2>0) x--;
-    else if(mm2<0) x++;
-    y = mm2*x + bb2; 
-    if(y<=0){
-      x = int(random(470,width));
-      vertical = false;
+  //
+  void move_2() {
+
+    //
+    if (y>=height) {
+      y=0;
+      x = int(random(470, width));
     }
-    text(y,50,50);
-  }else
-  y++;
+
+    //
+    if (vertical == true) {
+
+      //
+      if (mm2>0) {
+        x--;
+        y = mm2*x + bb2; 
+        //
+      } else if (mm2<0) {
+        x++;
+        y = mm2*x + bb2;
+      } else if ( mm2 == 0) {
+        y--;
+      }
+
+      //
+      if (y<= 0) {
+        x = int( random(470, width) );
+        vertical = false;
+      }
+    }
+    //
+    else y++;
   }
 }
 
